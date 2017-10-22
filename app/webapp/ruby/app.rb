@@ -166,28 +166,25 @@ class App < Sinatra::Base
       return 403
     end
 
-    sleep 1.0
-
     statement = db.prepare('SELECT channel.id, haveread.message_id FROM channel LEFT JOIN haveread ON haveread.user_id = ? AND haveread.channel_id = channel.id')
-    rows = statement.execute(user_id)
+    rows = statement.execute(user_id).to_a
+    statement.close
 
     res = []
     rows.each do |row|
       r = {}
       r['channel_id'] = row['id']
-      r['unread'] = 100
-      #r['unread'] = if row.nil?
-      #  statement = db.prepare('SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?')
-      #  statement.execute(channel_id).first['cnt']
-      #else
-      #  statement = db.prepare('SELECT COUNT(*) as cnt FROM message WHERE channel_id = ? AND ? < id')
-      #  statement.execute(channel_id, row['message_id']).first['cnt']
-      #end
-      #statement.close
+      r['unread'] = if row.nil?
+        statement = db.prepare('SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?')
+        statement.execute(channel_id).first['cnt']
+      else
+        statement = db.prepare('SELECT COUNT(*) as cnt FROM message WHERE channel_id = ? AND ? < id')
+        statement.execute(channel_id, row['message_id']).first['cnt']
+      end
+      statement.close
       res << r
     end
 
-    statement.close
 
     content_type :json
     res.to_json
