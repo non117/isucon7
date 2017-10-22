@@ -311,7 +311,7 @@ class App < Sinatra::Base
 
     if !avatar_name.nil? && !avatar_data.nil?
       file_path = "/home/isucon/isubata/webapp/public/icons/#{avatar_name}"
-      File.move(params[:file][:filename], file_pathj)
+      File.move(params[:file][:filename], file_path)
       statement = db.prepare('UPDATE user SET avatar_icon = ? WHERE id = ?')
       statement.execute(avatar_name, user['id'])
       statement.close
