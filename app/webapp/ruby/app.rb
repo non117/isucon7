@@ -323,7 +323,7 @@ class App < Sinatra::Base
     ext = file_name.include?('.') ? File.extname(file_name) : ''
     mime = ext2mime(ext)
 
-    file_path = "/home/isucon/isubata/webapp/public/icons/#{file_name}"
+    file_path = "./icons/#{file_name}"
     if File.exists?(file_path)
       content_type mime
       return File.read(file_path)
