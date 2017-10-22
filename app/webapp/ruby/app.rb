@@ -170,7 +170,6 @@ class App < Sinatra::Base
 
     statement = db.prepare('SELECT channel.id, haveread.message_id FROM channel LEFT JOIN haveread ON haveread.user_id = ? AND haveread.channel_id = channel.id')
     rows = statement.execute(user_id)
-    statement.close
 
     res = []
     rows.each do |row|
@@ -187,6 +186,8 @@ class App < Sinatra::Base
       #statement.close
       res << r
     end
+
+    statement.close
 
     content_type :json
     res.to_json
