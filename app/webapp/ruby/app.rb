@@ -121,7 +121,6 @@ class App < Sinatra::Base
     statement = db.prepare('SELECT message.*, user.name as user_name, user.display_name as user_display_name, user.avatar_icon as user_avatar_icon FROM message LEFT JOIN user ON user.id = message.user_id WHERE message.id > ? AND message.channel_id = ? ORDER BY message.id DESC LIMIT 100;')
     rows = statement.execute(last_message_id, channel_id).to_a
     response = []
-    statement.close
     rows.each do |row|
       r = {}
       r['id'] = row['id']
@@ -163,7 +162,6 @@ class App < Sinatra::Base
     channel_ids.each do |channel_id|
       statement = db.prepare('SELECT * FROM haveread WHERE user_id = ? AND channel_id = ?')
       row = statement.execute(user_id, channel_id).first
-      statement.close
       r = {}
       r['channel_id'] = channel_id
       r['unread'] = if row.nil?
@@ -173,7 +171,6 @@ class App < Sinatra::Base
         statement = db.prepare('SELECT COUNT(*) as cnt FROM message WHERE channel_id = ? AND ? < id')
         statement.execute(channel_id, row['message_id']).first['cnt']
       end
-      statement.close
       res << r
     end
 
@@ -200,7 +197,6 @@ class App < Sinatra::Base
     n = 20
     statement = db.prepare('SELECT message.*, user.name as user_name, user.display_name as user_display_name, user.avatar_icon as user_avatar_icon FROM message LEFT JOIN user ON user.id = message.user_id WHERE message.channel_id = ? ORDER BY message.id DESC LIMIT ? OFFSET ?')
     rows = statement.execute(@channel_id, n, (@page - 1) * n).to_a
-    statement.close
     @messages = []
     rows.each do |row|
       r = {}
@@ -218,7 +214,6 @@ class App < Sinatra::Base
 
     statement = db.prepare('SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?')
     cnt = statement.execute(@channel_id).first['cnt'].to_f
-    statement.close
     @max_page = cnt == 0 ? 1 :(cnt / n).ceil
 
     return 400 if @page > @max_page
@@ -237,7 +232,6 @@ class App < Sinatra::Base
     user_name = params[:user_name]
     statement = db.prepare('SELECT * FROM user WHERE name = ?')
     @user = statement.execute(user_name).first
-    statement.close
 
     if @user.nil?
       return 404
@@ -269,7 +263,6 @@ class App < Sinatra::Base
     statement = db.prepare('INSERT INTO channel (name, description, updated_at, created_at) VALUES (?, ?, NOW(), NOW())')
     statement.execute(name, description)
     channel_id = db.last_id
-    statement.close
     redirect "/channel/#{channel_id}", 303
   end
 
@@ -310,16 +303,13 @@ class App < Sinatra::Base
     if !avatar_name.nil? && !avatar_data.nil?
       statement = db.prepare('INSERT INTO image (name, data) VALUES (?, ?)')
       statement.execute(avatar_name, avatar_data)
-      statement.close
       statement = db.prepare('UPDATE user SET avatar_icon = ? WHERE id = ?')
       statement.execute(avatar_name, user['id'])
-      statement.close
     end
 
     if !display_name.nil? || !display_name.empty?
       statement = db.prepare('UPDATE user SET display_name = ? WHERE id = ?')
       statement.execute(display_name, user['id'])
-      statement.close
     end
 
     redirect '/', 303
@@ -329,7 +319,6 @@ class App < Sinatra::Base
     file_name = params[:file_name]
     statement = db.prepare('SELECT * FROM image WHERE name = ?')
     row = statement.execute(file_name).first
-    statement.close
     ext = file_name.include?('.') ? File.extname(file_name) : ''
     mime = ext2mime(ext)
     if !row.nil? && !mime.empty?
@@ -359,14 +348,12 @@ class App < Sinatra::Base
   def db_get_user(user_id)
     statement = db.prepare('SELECT * FROM user WHERE id = ?')
     user = statement.execute(user_id).first
-    statement.close
     user
   end
 
   def db_add_message(channel_id, user_id, content)
     statement = db.prepare('INSERT INTO message (channel_id, user_id, content, created_at) VALUES (?, ?, ?, NOW())')
     messages = statement.execute(channel_id, user_id, content)
-    statement.close
     messages
   end
 
@@ -380,7 +367,6 @@ class App < Sinatra::Base
     statement = db.prepare('INSERT INTO user (name, salt, password, display_name, avatar_icon, created_at) VALUES (?, ?, ?, ?, ?, NOW())')
     statement.execute(user, salt, pass_digest, user, 'default.png')
     row = db.query('SELECT LAST_INSERT_ID() AS last_insert_id').first
-    statement.close
     row['last_insert_id']
   end
 
