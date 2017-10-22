@@ -37,7 +37,7 @@ class App < Sinatra::Base
     db.query("DELETE FROM user WHERE id > 1000")
     db.query("DELETE FROM image WHERE id > 1001")
 
-    unless File.exists?('/home/isucon/isubata/webapp/public/icons/default.png') do
+    unless File.exists?('/home/isucon/isubata/webapp/public/icons/default.png')
       rows = db.query("SELECT * FROM image WHERE id <= 1001").to_a
       rows.each do |row|
         file_path = "/home/isucon/isubata/webapp/public/icons/#{row['name']}"
