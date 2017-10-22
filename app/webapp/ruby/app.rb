@@ -36,6 +36,13 @@ class App < Sinatra::Base
   get '/initialize' do
     db.query("DELETE FROM user WHERE id > 1000")
     db.query("DELETE FROM image WHERE id > 1001")
+
+    rows = db.query("SELECT * FROM image WHERE id <= 1001").to_a
+    rows.each do |row|
+      file_path = "/home/isucon/isubata/webapp/public/icons/#{row['name']}"
+      File.write(file_path, row['data'])
+    end
+
     db.query("DELETE FROM channel WHERE id > 10")
     db.query("DELETE FROM message WHERE id > 10000")
     db.query("DELETE FROM haveread")
