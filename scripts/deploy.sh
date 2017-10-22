@@ -1,8 +1,8 @@
 #!/bin/bash
 
 git clone git@github.com:non117/isucon7.git
-sudo cp isucon7/conf/nginx.conf /etc/nginx/nginx.conf
-sudo cp isucon7/conf/sites-enabled/nginx.conf /etc/nginx/sites-enabled/nginx.conf
+sudo cp isucon7/conf/web/etc/nginx/nginx.conf /etc/nginx/nginx.conf
+sudo cp isucon7/conf/web/etc/nginx/sites-enabled/nginx.conf /etc/nginx/sites-enabled/nginx.conf
 # sudo cp isucon7/conf/my.cnf /etc/my.cnf
 # redis or memcached config. do something.
 
