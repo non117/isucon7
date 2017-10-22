@@ -1,6 +1,7 @@
 require 'digest/sha1'
 require 'mysql2'
 require 'sinatra/base'
+require 'fileutils'
 
 class App < Sinatra::Base
   configure do
@@ -320,7 +321,7 @@ class App < Sinatra::Base
 
     if !avatar_name.nil? && !avatar_data.nil?
       file_path = "/home/isucon/isubata/webapp/public/icons/#{avatar_name}"
-      File.move(file[:filename], file_path)
+      FileUtils.move(file[:filename], file_path)
       statement = db.prepare('UPDATE user SET avatar_icon = ? WHERE id = ?')
       statement.execute(avatar_name, user['id'])
       statement.close
