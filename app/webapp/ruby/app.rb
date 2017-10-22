@@ -239,7 +239,7 @@ class App < Sinatra::Base
     @self_profile = user['id'] == @user['id']
     erb :profile
   end
-  
+
   get '/add_channel' do
     if user.nil?
       return redirect '/login', 303
@@ -320,13 +320,21 @@ class App < Sinatra::Base
 
   get '/icons/:file_name' do
     file_name = params[:file_name]
+    ext = file_name.include?('.') ? File.extname(file_name) : ''
+    mime = ext2mime(ext)
+
+    file_path = "/home/isucon/isubata/webapp/public/icons/#{file_name}"
+    if File.exists?(file_path)
+      content_type mime
+      return File.read(file_path)
+    end
+
     statement = db.prepare('SELECT * FROM image WHERE name = ?')
     row = statement.execute(file_name).first
     statement.close
-    ext = file_name.include?('.') ? File.extname(file_name) : ''
-    mime = ext2mime(ext)
     if !row.nil? && !mime.empty?
       content_type mime
+      File.write(file_path, row['data'])
       return row['data']
     end
     404
