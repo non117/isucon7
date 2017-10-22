@@ -168,24 +168,23 @@ class App < Sinatra::Base
 
     sleep 1.0
 
-    rows = db.query('SELECT id FROM channel').to_a
-    channel_ids = rows.map { |row| row['id'] }
+    statement = db.prepare('SELECT channel.id, haveread.message_id FROM channel LEFT JOIN haveread ON haveread.user_id = ? AND haveread.channel_id = channel.id')
+    rows = statement.execute(user_id)
+    statement.close
 
     res = []
-    channel_ids.each do |channel_id|
-      statement = db.prepare('SELECT * FROM haveread WHERE user_id = ? AND channel_id = ?')
-      row = statement.execute(user_id, channel_id).first
-      statement.close
+    rows.each do |row|
       r = {}
-      r['channel_id'] = channel_id
-      r['unread'] = if row.nil?
-        statement = db.prepare('SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?')
-        statement.execute(channel_id).first['cnt']
-      else
-        statement = db.prepare('SELECT COUNT(*) as cnt FROM message WHERE channel_id = ? AND ? < id')
-        statement.execute(channel_id, row['message_id']).first['cnt']
-      end
-      statement.close
+      r['channel_id'] = row['id']
+      r['unread'] = 100
+      #r['unread'] = if row.nil?
+      #  statement = db.prepare('SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?')
+      #  statement.execute(channel_id).first['cnt']
+      #else
+      #  statement = db.prepare('SELECT COUNT(*) as cnt FROM message WHERE channel_id = ? AND ? < id')
+      #  statement.execute(channel_id, row['message_id']).first['cnt']
+      #end
+      #statement.close
       res << r
     end
 
